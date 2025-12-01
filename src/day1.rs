@@ -1,3 +1,9 @@
 pub fn day1(input: &str) -> String {
-    input.to_string()
+    let mut x: u64 = 0;
+    for i in 0..1000000000 {
+        x += i;
+        
+    }
+    
+    x.to_string()
 }
