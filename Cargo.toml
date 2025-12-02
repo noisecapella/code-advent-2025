@@ -21,6 +21,7 @@ features = [
     'Event',
     'HtmlButtonElement',
     'HtmlInputElement',
+    'HtmlTextAreaElement',
     'HtmlElement',
     'MessageEvent',
     'Node',

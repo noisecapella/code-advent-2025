@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use js_sys::JsString;
-use web_sys::{HtmlButtonElement, HtmlInputElement, Worker};
+use web_sys::{HtmlButtonElement, HtmlInputElement, HtmlTextAreaElement, Worker};
 use serde::{Serialize, Deserialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -22,12 +22,21 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
     label.set_text_content(Some(&label_str));
     li.append_child(&label)?;
 
+    let br = document.create_element("br")?;
+    li.append_child(&br)?;
+
     let text_input_id = format!("day-{day}-input");
+    let button_id = format!("day-{day}-button");
+    let button_id_clone = button_id.to_string();
     let result_span_id = format!("day-{day}-result");
 
-    let text_input = document.create_element("input")?;
+    let text_input = document.create_element("textarea")?;
     text_input.set_attribute("id", &text_input_id)?;
+    text_input.set_attribute("rows", "20")?;
     li.append_child(&text_input)?;
+
+    let br2 = document.create_element("br")?;
+    li.append_child(&br2)?;
 
     let button_element = document.create_element("button")?;
     let button = button_element.dyn_ref::<HtmlButtonElement>().ok_or_else(
@@ -44,7 +53,7 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
             let input_element = _document.get_element_by_id(&text_input_id).ok_or_else(
                 || JsError::new("Could not find text element")
             )?;
-            let input = input_element.dyn_ref::<HtmlInputElement>().ok_or_else(
+            let input = input_element.dyn_ref::<HtmlTextAreaElement>().ok_or_else(
                 || JsError::new("Id was not for a text element")
             )?;
 
@@ -67,12 +76,23 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
             )?;
             web_sys::console::log_1(&"Sent request".into());
 
+            let _button_element = _document.get_element_by_id(&button_id_clone).ok_or_else(
+                || JsError::new("Could not find button element")
+            )?;
+            let button = _button_element.dyn_ref::<HtmlButtonElement>().ok_or_else(
+                || JsError::new("Id was not for a button element")
+            )?;
+            button.set_attribute("disabled", "1").or_else(
+                |_| Err(JsError::new("Could not disable button"))
+            )?;
+
             Ok(())
         }
         )
     );
     button.set_onclick(Some(on_click.as_ref().unchecked_ref()));
-    button.set_inner_html("Click");
+    button.set_inner_html("Process Day 1");
+    button.set_attribute("id", &button_id.as_str())?;
     li.append_child(&button)?;
     on_click.forget();
 
@@ -121,6 +141,19 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
                 )?;
                 result_span.set_text_content(Some(&obj.message));
 
+
+                let day = obj.day;
+                let _button_id = format!("day-{day}-button");
+                let _button_element = _document.get_element_by_id(&_button_id).ok_or_else(
+                    || JsError::new("Could not find button element")
+                )?;
+                let _button = _button_element.dyn_ref::<HtmlButtonElement>().ok_or_else(
+                    || JsError::new("Id was not for a button element")
+                )?;
+                _button.remove_attribute("disabled").or_else(
+                    |_| Err(JsError::new("Could not remove disabled attribute"))
+                )?;
+
                 Ok(())
             }
         }
@@ -138,6 +171,10 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
     let description = document.create_element("h3")?;
     description.set_text_content(Some("Advent of Code 2025"));
     body.append_child(&description)?;
+
+    let processing_div = document.create_element("div")?;
+    processing_div.set_attribute("id", "processing")?;
+    body.append_child(&processing_div)?;
 
     let list = document.create_element("ul")?;
 
@@ -184,6 +221,7 @@ pub fn run_worker(event: &web_sys::Event, post_message: &js_sys::Function) -> Re
         )?;
         web_sys::console::log_1(&"Worker sent response".into());
         post_message.call1(&JsValue::NULL, &JsValue::from_str(&json))?;
+
         Ok(())
     }
 }
