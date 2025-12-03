@@ -86,6 +86,12 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
                 |_| Err(JsError::new("Could not disable button"))
             )?;
 
+            let result_span_id = format!("day-{day}-result");
+            let result_span = _document.get_element_by_id(&result_span_id).ok_or_else(
+                || JsError::new("Could not find result span")
+            )?;
+            result_span.set_text_content(Some("Processing..."));
+
             Ok(())
         }
         )
@@ -96,7 +102,10 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
     li.append_child(&button)?;
     on_click.forget();
 
-    let result_span = document.create_element("span")?;
+    let br3 = document.create_element("br")?;
+    li.append_child(&br3)?;
+
+    let result_span = document.create_element("pre")?;
     result_span.set_attribute("id", &result_span_id)?;
     li.append_child(&result_span)?;
 
@@ -185,6 +194,13 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
     Ok(())
 }
 
+fn process_day(day: u64, input: &str) -> Result<String, JsError> {
+    match day {
+        1 => day1::day1(input),
+        _ => Err(JsError::new("Unexpected day"))
+    }
+}
+
 
 #[wasm_bindgen]
 pub fn run_worker(event: &web_sys::Event, post_message: &js_sys::Function) -> Result<(), JsValue> {
@@ -206,14 +222,19 @@ pub fn run_worker(event: &web_sys::Event, post_message: &js_sys::Function) -> Re
     if obj.message_type != "request" {
         Err(JsError::new("Unexpected message_type").into())
     } else {
-        let result = match obj.day {
-            1 => Ok(day1::day1(&obj.message)),
-            _ => Err(JsError::new("Unexpected day"))
-        }?;
+        let result = process_day(
+            obj.day, &obj.message
+        );
+
+        let message_text = result.unwrap_or_else(
+            |err| {
+                format!("Error: {:?}", JsValue::from(err))
+            }
+        );
         let message = Message {
             day: obj.day,
             message_type: "response".to_string(),
-            message: result,
+            message: message_text,
         };
 
         let json = serde_json::to_string(&message).or_else(
