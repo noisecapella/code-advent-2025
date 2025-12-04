@@ -1,4 +1,5 @@
 mod day1;
+mod day2;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -15,10 +16,6 @@ struct Message {
     message: String
 }
 
-fn format_day_input(day: u64, part: u64) -> String {
-    format!("day-{day}-{part}-input")
-}
-
 fn format_day_button(day: u64, part: u64) -> String {
     format!("day-{day}-{part}-button")
 }
@@ -27,9 +24,24 @@ fn format_day_result(day: u64, part: u64) -> String {
     format!("day-{day}-{part}-result")
 }
 
-fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64, part: u64) -> Result<(), JsValue> {
+struct DayPart {
+    day: u64,
+    part: u64,
+    func: fn(&str) -> Result<String, JsError>,
+}
+
+const DAY_PARTS: [DayPart; 4] = [
+    DayPart { day: 1, part: 1, func: day1::day1_part1 },
+    DayPart { day: 1, part: 2, func: day1::day1_part2 },
+    DayPart { day: 2, part: 1, func: day2::day2_part1 },
+    DayPart { day: 2, part: 2, func: day2::day2_part2 },
+];
+
+fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day_part: &DayPart) -> Result<(), JsValue> {
     let document = get_document()?;
     let li = document.create_element("li")?;
+    let day = day_part.day;
+    let part = day_part.part;
     let label_str = format!("Day {day}, part {part}");
     let label = document.create_element("label")?;
     label.set_text_content(Some(&label_str));
@@ -38,15 +50,9 @@ fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day
     let br = document.create_element("br")?;
     li.append_child(&br)?;
 
-    let text_input_id = format_day_input(day, part);
     let button_id = format_day_button(day, part);
     let button_id_clone = button_id.to_string();
     let result_span_id = format_day_result(day, part);;
-
-    let text_input = document.create_element("textarea")?;
-    text_input.set_attribute("id", &text_input_id)?;
-    text_input.set_attribute("rows", "20")?;
-    li.append_child(&text_input)?;
 
     let br2 = document.create_element("br")?;
     li.append_child(&br2)?;
@@ -57,13 +63,12 @@ fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day
     )?;
     let on_click = Closure::<dyn FnMut(web_sys::Event) -> Result<(), JsError>>::wrap(
         Box::new(move |e: web_sys::Event| -> Result<(), JsError> {
-            web_sys::console::log_2(&"Clicked".into(), &text_input_id.to_string().into());
             e.prevent_default();
 
             // need to get document from web_sys since closure has a static lifetime
             let _document = get_document()?;
 
-            let input_element = _document.get_element_by_id(&text_input_id).ok_or_else(
+            let input_element = _document.get_element_by_id("day-input").ok_or_else(
                 || JsError::new("Could not find text element")
             )?;
             let input = input_element.dyn_ref::<HtmlTextAreaElement>().ok_or_else(
@@ -201,8 +206,14 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
 
     let list = document.create_element("ul")?;
 
-    add_day_part(worker.clone(), &list, 1, 1)?;
-    add_day_part(worker.clone(), &list, 1, 2)?;
+    let text_input = document.create_element("textarea")?;
+    text_input.set_attribute("id", "day-input")?;
+    text_input.set_attribute("rows", "20")?;
+    body.append_child(&text_input)?;
+
+    for day_part in DAY_PARTS.iter() {
+        add_day_part(worker.clone(), &list, day_part)?;
+    }
 
     body.append_child(&list)?;
 
@@ -210,14 +221,14 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
 }
 
 fn process_day(day: u64, part: u64, input: &str) -> Result<String, JsError> {
-    match day {
-        1 => match part {
-            1 => day1::day1_part1(input),
-            2 => day1::day1_part2(input),
-            _ => Err(JsError::new("Unexpected part"))
+    for _day_part in DAY_PARTS.iter() {
+        if day == _day_part.day && part == _day_part.part {
+            let func = _day_part.func;
+            return Ok(func(input)?);
         }
-        _ => Err(JsError::new("Unexpected day"))
     }
+
+    Err(JsError::new("Unexpected day or part"))
 }
 
 
