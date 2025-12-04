@@ -10,14 +10,27 @@ use serde::{Serialize, Deserialize};
 #[derive(Deserialize, Serialize, Debug)]
 struct Message {
     day: u64,
+    part: u64,
     message_type: String,
     message: String
 }
 
-fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64) -> Result<(), JsValue> {
+fn format_day_input(day: u64, part: u64) -> String {
+    format!("day-{day}-{part}-input")
+}
+
+fn format_day_button(day: u64, part: u64) -> String {
+    format!("day-{day}-{part}-button")
+}
+
+fn format_day_result(day: u64, part: u64) -> String {
+    format!("day-{day}-{part}-result")
+}
+
+fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64, part: u64) -> Result<(), JsValue> {
     let document = get_document()?;
     let li = document.create_element("li")?;
-    let label_str = format!("Day {day}");
+    let label_str = format!("Day {day}, part {part}");
     let label = document.create_element("label")?;
     label.set_text_content(Some(&label_str));
     li.append_child(&label)?;
@@ -25,10 +38,10 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
     let br = document.create_element("br")?;
     li.append_child(&br)?;
 
-    let text_input_id = format!("day-{day}-input");
-    let button_id = format!("day-{day}-button");
+    let text_input_id = format_day_input(day, part);
+    let button_id = format_day_button(day, part);
     let button_id_clone = button_id.to_string();
-    let result_span_id = format!("day-{day}-result");
+    let result_span_id = format_day_result(day, part);;
 
     let text_input = document.create_element("textarea")?;
     text_input.set_attribute("id", &text_input_id)?;
@@ -62,6 +75,7 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
             let message = Message {
                 message_type: "request".to_string(),
                 day: day,
+                part: part,
                 message: message_string
             };
             let json: String = serde_json::to_string(&message).or_else(
@@ -86,7 +100,7 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
                 |_| Err(JsError::new("Could not disable button"))
             )?;
 
-            let result_span_id = format!("day-{day}-result");
+            let result_span_id = format_day_result(day, part);
             let result_span = _document.get_element_by_id(&result_span_id).ok_or_else(
                 || JsError::new("Could not find result span")
             )?;
@@ -97,7 +111,7 @@ fn add_day(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day: u64
         )
     );
     button.set_onclick(Some(on_click.as_ref().unchecked_ref()));
-    button.set_inner_html("Process Day 1");
+    button.set_inner_html(format!("Process Day {day}, part {part}").as_str());
     button.set_attribute("id", &button_id.as_str())?;
     li.append_child(&button)?;
     on_click.forget();
@@ -125,7 +139,6 @@ fn get_document() -> Result<web_sys::Document, JsError> {
 #[wasm_bindgen]
 pub fn run(worker: &Worker) -> Result<(), JsValue> {
     let worker = Rc::new(RefCell::new(Worker::new("./worker.js")?));
-    let worker_clone = worker.clone();
 
     let worker_handle = &*worker.borrow();
     let worker_closure = Closure::<dyn FnMut(web_sys::MessageEvent) -> Result<(), JsError>>::new(
@@ -144,7 +157,8 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
             } else {
                 let _document = get_document()?;
                 let day = obj.day;
-                let result_span_id = format!("day-{day}-result");
+                let part = obj.part;
+                let result_span_id = format_day_result(day, part);
                 let result_span = _document.get_element_by_id(&result_span_id).ok_or_else(
                     || JsError::new("Could not find result span")
                 )?;
@@ -152,7 +166,7 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
 
 
                 let day = obj.day;
-                let _button_id = format!("day-{day}-button");
+                let _button_id = format_day_button(day, part);
                 let _button_element = _document.get_element_by_id(&_button_id).ok_or_else(
                     || JsError::new("Could not find button element")
                 )?;
@@ -187,16 +201,21 @@ pub fn run(worker: &Worker) -> Result<(), JsValue> {
 
     let list = document.create_element("ul")?;
 
-    add_day(worker_clone, &list, 1)?;
+    add_day_part(worker.clone(), &list, 1, 1)?;
+    add_day_part(worker.clone(), &list, 1, 2)?;
 
     body.append_child(&list)?;
 
     Ok(())
 }
 
-fn process_day(day: u64, input: &str) -> Result<String, JsError> {
+fn process_day(day: u64, part: u64, input: &str) -> Result<String, JsError> {
     match day {
-        1 => day1::day1(input),
+        1 => match part {
+            1 => day1::day1_part1(input),
+            2 => day1::day1_part2(input),
+            _ => Err(JsError::new("Unexpected part"))
+        }
         _ => Err(JsError::new("Unexpected day"))
     }
 }
@@ -223,7 +242,7 @@ pub fn run_worker(event: &web_sys::Event, post_message: &js_sys::Function) -> Re
         Err(JsError::new("Unexpected message_type").into())
     } else {
         let result = process_day(
-            obj.day, &obj.message
+            obj.day, obj.part, &obj.message
         );
 
         let message_text = result.unwrap_or_else(
@@ -233,6 +252,7 @@ pub fn run_worker(event: &web_sys::Event, post_message: &js_sys::Function) -> Re
         );
         let message = Message {
             day: obj.day,
+            part: obj.part,
             message_type: "response".to_string(),
             message: message_text,
         };
