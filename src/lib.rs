@@ -1,6 +1,7 @@
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -31,13 +32,15 @@ struct DayPart {
     func: fn(&str) -> Result<String, JsError>,
 }
 
-const DAY_PARTS: [DayPart; 6] = [
+const DAY_PARTS: [DayPart; 8] = [
     DayPart { day: 1, part: 1, func: day1::day1_part1 },
     DayPart { day: 1, part: 2, func: day1::day1_part2 },
     DayPart { day: 2, part: 1, func: day2::day2_part1 },
     DayPart { day: 2, part: 2, func: day2::day2_part2 },
     DayPart { day: 3, part: 1, func: day3::day3_part1 },
     DayPart { day: 3, part: 2, func: day3::day3_part2 },
+    DayPart { day: 4, part: 1, func: day4::day4_part1 },
+    DayPart { day: 4, part: 2, func: day4::day4_part2 },
 ];
 
 fn add_day_part(worker_handle: Rc<RefCell<Worker>>, list: &web_sys::Element, day_part: &DayPart) -> Result<(), JsValue> {
