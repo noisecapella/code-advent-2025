@@ -3,28 +3,6 @@ name = "aoc2025"
 version = "0.1.0"
 edition = "2024"
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
-js-sys = "0.3.83"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
-wasm-bindgen = "*"
-
-[dependencies.web-sys]
-version = "0.3.83"
-features = [
-    'console',
-    'Document',
-    'Element',
-    'Event',
-    'HtmlButtonElement',
-    'HtmlInputElement',
-    'HtmlTextAreaElement',
-    'HtmlElement',
-    'MessageEvent',
-    'Node',
-    'Window',
-    'Worker',
-]
+console_error_panic_hook = "0.1.7"
+leptos = { version = "0.8.14", features = ["csr"] }

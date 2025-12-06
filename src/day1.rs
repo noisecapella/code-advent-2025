@@ -1,4 +1,4 @@
-use wasm_bindgen::prelude::*;
+use leptos::wasm_bindgen::JsError;
 
 pub fn day1_part1(input: &str) -> Result<String, JsError> {
     let mut start: i64 = 50;

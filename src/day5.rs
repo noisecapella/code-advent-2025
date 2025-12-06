@@ -1,5 +1,4 @@
-use wasm_bindgen::prelude::*;
-use web_sys::console::*;
+use leptos::wasm_bindgen::JsError;
 
 fn parse_ranges(lines: &mut std::str::Lines) -> Result<Vec<std::ops::Range<u64>>, JsError> {
     lines.take_while(|line| {

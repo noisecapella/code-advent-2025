@@ -1,7 +1,4 @@
-use wasm_bindgen::prelude::*;
-use std::iter::Map;
-use std::str::Split;
-use web_sys::console::*;
+use leptos::wasm_bindgen::JsError;
 
 fn parse_ranges(input: &str) -> Result<Vec<(u128, u128)>, JsError> {
     let pieces = input.split(",");

@@ -1,5 +1,4 @@
-use wasm_bindgen::prelude::*;
-use web_sys::console::*;
+use leptos::wasm_bindgen::JsError;
 
 fn sort_chars(line: &str) -> Result<Vec<(usize, u32)>, JsError> {
     let mut option_vec: Option<Vec<(usize, u32)>> = line.chars().enumerate().map(|(i, c)| {

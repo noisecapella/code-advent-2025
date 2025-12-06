@@ -1,5 +1,4 @@
-use wasm_bindgen::prelude::*;
-use web_sys::console::*;
+use leptos::wasm_bindgen::JsError;
 
 struct Board {
     items: Vec<char>,
