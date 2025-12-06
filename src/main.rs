@@ -10,6 +10,7 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 
 struct DayPart {
     day: u64,
@@ -17,7 +18,7 @@ struct DayPart {
     func: fn(&str) -> Result<String, JsError>,
 }
 
-const DAY_PARTS: [DayPart; 10] = [
+const DAY_PARTS: [DayPart; 12] = [
     DayPart { day: 1, part: 1, func: day1::day1_part1 },
     DayPart { day: 1, part: 2, func: day1::day1_part2 },
     DayPart { day: 2, part: 1, func: day2::day2_part1 },
@@ -28,6 +29,8 @@ const DAY_PARTS: [DayPart; 10] = [
     DayPart { day: 4, part: 2, func: day4::day4_part2 },
     DayPart { day: 5, part: 1, func: day5::day5_part1 },
     DayPart { day: 5, part: 2, func: day5::day5_part2 },
+    DayPart { day: 6, part: 1, func: day6::day6_part1 },
+    DayPart { day: 6, part: 2, func: day6::day6_part2 },
 ];
 
 fn Main() -> impl IntoView {
@@ -80,31 +83,17 @@ fn Main() -> impl IntoView {
                 }
             />
         </div>
-        <div style="display: flex; gap: 10px;">
-            <b>Day 1</b>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((1, 1)); }>Part 1</button>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((1, 2)); }>Part 2</button>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <b>Day 2</b>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((2, 1)); }>Part 1</button>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((2, 2)); }>Part 2</button>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <b>Day 3</b>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((3, 1)); }>Part 1</button>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((3, 2)); }>Part 2</button>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <b>Day 4</b>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((4, 1)); }>Part 1</button>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((4, 2)); }>Part 2</button>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <b>Day 5</b>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((5, 1)); }>Part 1</button>
-            <button disabled={disabled} on:click=move |e| { process.dispatch((5, 2)); }>Part 2</button>
-        </div>
+        {move || {
+            (1..=6).map(|day| {
+            view! {
+                <div style="display: flex; gap: 10px;">
+                    <b>"Day "{day}</b>
+                    <button disabled={disabled} on:click=move |e| { process.dispatch((day, 1)); }>Part 1</button>
+                    <button disabled={disabled} on:click=move |e| { process.dispatch((day, 2)); }>Part 2</button>
+                </div>
+            }
+            }).collect::<Vec<_>>()
+        }}
         <h4>Messages</h4>
         <div>
             <pre>{message}</pre>
