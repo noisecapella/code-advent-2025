@@ -9,7 +9,7 @@ module.exports = {
         worker: './worker.js',
     },
     output: {
-        path: path.resolve(__dirname, '..', 'dist', 'hello_world'),
+        path: path.resolve(__dirname, 'pkg'),
     },
     plugins: [
         new HtmlWebpackPlugin(),

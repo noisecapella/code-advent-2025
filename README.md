@@ -6,4 +6,7 @@ To set up:
  - run `npm install`
  - run `npm run serve`. This will install and build the webassembly output using rust, and then serve a simple website at localhost:8080
 
-
+Release mode:
+ - run `npm run build`
+ - cd to `pkg`
+ - run `python -m http.server`. Go to localhost:8000
