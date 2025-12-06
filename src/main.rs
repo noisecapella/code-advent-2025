@@ -36,31 +36,24 @@ fn Main() -> impl IntoView {
 
     let process = Action::new(move |input: &(u64, u64)| {
         let (day, part) = *input;
-        let daypart = DAY_PARTS.iter().find(
-            |dp| dp.day == day && dp.part == part
-        );
         async move {
-            match daypart {
-                Some(_daypart) => {
-                    let result = (_daypart.func)(input_text.get().as_ref());
-
-                    match result {
-                        Ok(_result) => {
-                            set_message.set(_result);
-                        },
-                        Err(_err) => {
-                            set_message.set(
-                                format!("Error: {:?}", _err)
-                            );
-                        }
-                    };
+            let daypart = DAY_PARTS.iter().find(
+                |dp| dp.day == day && dp.part == part
+            ).ok_or_else(||
+                JsError::new(format!("No function found for day {} part {}", day, part).as_str())
+            );
+            let result = daypart.and_then(|_daypart| {
+                (_daypart.func)(input_text.get().as_ref())
+            });
+            match result {
+                Ok(_result) => {
+                    set_message.set(_result);
                 },
-                None => {
-                    set_message.set(
-                        format!("No function found for day {} part {}", day, part)
-                    );
+                Err(_err) => {
+                    set_message.set("Error, see console".to_string());
+                    error!("Error: {:?}", _err);
                 }
-            }
+            };
         }
     });
 
