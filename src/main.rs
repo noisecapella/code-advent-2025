@@ -11,6 +11,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 struct DayPart {
     day: u64,
@@ -18,7 +19,7 @@ struct DayPart {
     func: fn(&str) -> Result<String, JsError>,
 }
 
-const DAY_PARTS: [DayPart; 12] = [
+const DAY_PARTS: [DayPart; 14] = [
     DayPart { day: 1, part: 1, func: day1::day1_part1 },
     DayPart { day: 1, part: 2, func: day1::day1_part2 },
     DayPart { day: 2, part: 1, func: day2::day2_part1 },
@@ -31,6 +32,8 @@ const DAY_PARTS: [DayPart; 12] = [
     DayPart { day: 5, part: 2, func: day5::day5_part2 },
     DayPart { day: 6, part: 1, func: day6::day6_part1 },
     DayPart { day: 6, part: 2, func: day6::day6_part2 },
+    DayPart { day: 7, part: 1, func: day7::day7_part1 },
+    DayPart { day: 7, part: 2, func: day7::day7_part2 },
 ];
 
 fn Main() -> impl IntoView {
@@ -84,14 +87,16 @@ fn Main() -> impl IntoView {
             />
         </div>
         {move || {
-            (1..=6).map(|day| {
-            view! {
-                <div style="display: flex; gap: 10px;">
-                    <b>"Day "{day}</b>
-                    <button disabled={disabled} on:click=move |e| { process.dispatch((day, 1)); }>Part 1</button>
-                    <button disabled={disabled} on:click=move |e| { process.dispatch((day, 2)); }>Part 2</button>
-                </div>
-            }
+            DAY_PARTS.into_iter().filter(|day| day.part == 1).map(|daypart| {
+                let day = daypart.day;
+
+                view! {
+                    <div style="display: flex; gap: 10px;">
+                        <b>"Day "{day}</b>
+                        <button disabled={disabled} on:click=move |e| { process.dispatch((day, 1)); }>Part 1</button>
+                        <button disabled={disabled} on:click=move |e| { process.dispatch((day, 2)); }>Part 2</button>
+                    </div>
+                }
             }).collect::<Vec<_>>()
         }}
         <h4>Messages</h4>
