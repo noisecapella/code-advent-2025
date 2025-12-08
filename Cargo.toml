@@ -3,6 +3,16 @@ name = "aoc2025"
 version = "0.1.0"
 edition = "2024"
 
+
 [dependencies]
 console_error_panic_hook = "0.1.7"
 leptos = { version = "0.8.14", features = ["csr"] }
+
+
+[[bin]]
+name = "app"
+bench = false
+
+[[bin]]
+name = "worker"
+bench = false
