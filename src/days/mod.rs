@@ -13,6 +13,9 @@ mod day6;
 mod day7;
 mod day8;
 mod day9;
+mod day10;
+mod day11;
+mod day12;
 
 pub struct DayPart {
     pub day: u64,
@@ -20,7 +23,7 @@ pub struct DayPart {
     pub func: fn(&str) -> Result<String, JsError>,
 }
 
-pub const DAY_PARTS: [DayPart; 18] = [
+pub const DAY_PARTS: [DayPart; 24] = [
     DayPart { day: 1, part: 1, func: day1::day1_part1 },
     DayPart { day: 1, part: 2, func: day1::day1_part2 },
     DayPart { day: 2, part: 1, func: day2::day2_part1 },
@@ -39,5 +42,11 @@ pub const DAY_PARTS: [DayPart; 18] = [
     DayPart { day: 8, part: 2, func: day8::day8_part2 },
     DayPart { day: 9, part: 1, func: day9::day9_part1 },
     DayPart { day: 9, part: 2, func: day9::day9_part2 },
+    DayPart { day: 10, part: 1, func: day10::day10_part1 },
+    DayPart { day: 10, part: 2, func: day10::day10_part2 },
+    DayPart { day: 11, part: 1, func: day11::day11_part1 },
+    DayPart { day: 11, part: 2, func: day11::day11_part2 },
+    DayPart { day: 12, part: 1, func: day12::day12_part1 },
+    DayPart { day: 12, part: 2, func: day12::day12_part2 },
 ];
 
