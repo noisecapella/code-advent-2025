@@ -1,3 +1,6 @@
+#![feature(portable_simd)]
+extern crate core;
+
 use leptos::{view, IntoView};
 use leptos::leptos_dom::error;
 use leptos::prelude::{signal, Action};
@@ -73,5 +76,14 @@ pub fn Main() -> impl IntoView {
         <div>
             <pre>{message}</pre>
         </div>
+        <style>
+            ":root {
+  color-scheme: light dark;
+}
+body {
+color: light-dark(#333b3c, #efefec);
+ background-color: light-dark(#efedea, rgb(33, 36, 38));
+  } "
+        </style>
     }
 }
